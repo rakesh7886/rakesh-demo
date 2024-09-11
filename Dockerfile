@@ -1,26 +1,20 @@
-FROM asia-south1-docker.pkg.dev/q-gcp-01426-codex-cicd-24-08/codex-llms-package/dev:latest
+FROM python:3.8-slim
 
-# Set the working directory to /app
 WORKDIR /app
-RUN ls
 
-# Copy the current directory contents into the container at /app
-COPY ./src /app/
-COPY ./requirements.txt /app/requirements.txt
+# # Install the dependencies
+# RUN pip install --upgrade pip
+# RUN pip install -r /app/requirements.txt
 
-# Install CURL for Healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Copy the requirements file
+COPY ./requirements.txt requirements.txt
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir --upgrade pip && \ pip install --no-cache-dir -r requirements.txt
+# Install the dependencies
+RUN pip install --upgrade pip
+RUN pip install -r /app/requirements.txt
 
-# Define environment variable
-ENV GCP_PROJECT GCPProject
-ENV APP_NAME AppName
+# Copy all the project files
+COPY . .
 
-# CMD exec uvicorn main:app --host 0.0.0.0 --timeout-keep-alive 1800 --port ${PORT}
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--timeout-keep-alive", "1800","--port", "8080"]
-
-# Healthcheck
-
-HEALTHCHECK --interval=10s --timeout=5s CMD curl --fail http://0.0.0.0:8080/$APP_NAME/health || exit 1
+# Expose the port and run the FastAPI app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
