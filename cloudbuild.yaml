@@ -1,30 +1,36 @@
 steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}', 'gs://gs://wissen-tesst/wissen-test/']
+  # Step 1: Build Docker image from source stored in Google Cloud Storage
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}', 'gs://wissen-tesst/wissen-test/']
 
+  # Step 2: Push Docker image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}']
 
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}']
-
-- name: 'gcr.io/cloud-builders/gcloud'
-  args:
-    - 'run'
-    - 'deploy'
-    - '${_SERVICE_NAME}'
-    - '--image'
-    - 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}'
-    - '--platform'
-    - 'managed'
-    - '--region'
-    - '${_REGION}'
-    - '--allow-unauthenticated'
+  # Step 3: Deploy the image to Google Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - '${_REGION}'
+      - '--allow-unauthenticated'
 
 images:
   - 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}'
 
 substitutions:
   _PROJECT_ID: 'useful-builder-427720-a1'
-  _REGION: 'asia-south1'  
+  _REGION: 'asia-south1'
   _SERVICE_NAME: 'wissen-demo'
   _IMAGE_NAME: 'wissen-test'
   _TAG: 'latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY  # Use Cloud Logging for build logs
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET  # Default behavior for logs bucket
