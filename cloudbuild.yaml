@@ -1,34 +1,36 @@
 steps:
+  # Step 1: Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}', 'gs://wissen-tesst/wissen-test/']
+    args: ['build', '-t', '$_ARTIFACT_REGISTRY/$_IMAGE_NAME:$_TAG', '.']
 
+  # Step 2: Push the Docker image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}']
+    args: ['push', '$_ARTIFACT_REGISTRY/$_IMAGE_NAME:$_TAG']
 
-  - name: 'gcr.io/cloud-builders/gcloud'
+  # Step 3: Deploy the image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
     args:
       - 'run'
       - 'deploy'
-      - '${_SERVICE_NAME}'
+      - '$_SERVICE_NAME'
       - '--image'
-      - 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}'
+      - '$_ARTIFACT_REGISTRY/$_IMAGE_NAME:$_TAG'
+      - '--region'
+      - '$_REGION'
       - '--platform'
       - 'managed'
-      - '--region'
-      - '${_REGION}'
       - '--allow-unauthenticated'
 
 images:
-  - 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}'
-  
+  - '$_ARTIFACT_REGISTRY/$_IMAGE_NAME:$_TAG'
 
 substitutions:
-  _PROJECT_ID: 'useful-builder-427720-a1'
-  _REGION: 'us-central1'  # Change to supported region
-  _ARTIFACT_REGISTRY: rakesh-test
-  _SERVICE_NAME: 'wissen-demo'
-  _IMAGE_NAME: 'wissen-test'
+  _ARTIFACT_REGISTRY: 'us-central1-docker.pkg.dev/useful-builder-427720-a1/gcf-artifacts'       # Change to your Artifact Registry path
+  _IMAGE_NAME: 'rakesh-demo'
   _TAG: 'latest'
+  _SERVICE_NAME: 'my-cloud-run-service'              # Cloud Run service name
+  _REGION: 'us-central1'  # Cloud Run region
 
 options:
   logging: CLOUD_LOGGING_ONLY
