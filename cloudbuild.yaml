@@ -20,10 +20,12 @@ steps:
 
 images:
   - 'gcr.io/${_PROJECT_ID}/${_IMAGE_NAME}:${_TAG}'
+  
 
 substitutions:
   _PROJECT_ID: 'useful-builder-427720-a1'
   _REGION: 'us-central1'  # Change to supported region
+  _artifact_registry: rakesh-test
   _SERVICE_NAME: 'wissen-demo'
   _IMAGE_NAME: 'wissen-test'
   _TAG: 'latest'
