@@ -1,0 +1,9 @@
+curl -X POST "http://localhost:8000/predict/" \
+-H "Content-Type: application/json" \
+-d '{"review_text": "This product is fantastic!"}'
+
+
+steps- 
+1. flipkart dataset for 10 k users 
+2. dataset we have for positive negative neutral
+3. trained 
